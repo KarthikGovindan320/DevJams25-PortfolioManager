@@ -1,0 +1,50 @@
+import mysql.connector
+from server import mock_stock_data  # Import the mock data directly
+
+# Replace with your MySQL credentials
+db_config = {
+    'host': 'localhost',
+    'user': 'your_mysql_user',
+    'password': 'your_mysql_password',
+    'database': 'stock_db'
+}
+
+def update_stock_data():
+    """
+    Connects to the MySQL database and updates stock data from mock_stock_data.
+    """
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        print("Connected to MySQL database successfully.")
+
+        # SQL query to insert or update data
+        query = """
+        INSERT INTO stocks (symbol, ltp, volume)
+        VALUES (%s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+        ltp = VALUES(ltp),
+        volume = VALUES(volume);
+        """
+
+        data_to_insert = []
+        for symbol, info in mock_stock_data.items():
+            data_to_insert.append((symbol, info['ltp'], info['volume']))
+
+        # Execute the query for all stocks in one batch
+        cursor.executemany(query, data_to_insert)
+        conn.commit()
+
+        print(f"Successfully updated {cursor.rowcount} records.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
+            print("MySQL connection closed.")
+
+if __name__ == '__main__':
+    update_stock_data()
