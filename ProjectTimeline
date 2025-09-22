@@ -1,4 +1,0 @@
-This file will document the process of developement of the project.
-
-21/09 (11:53) => Message data, and Market Data aquired, in CSV format.
-21/09 (15:49) => Tips processed with sentiment analysis. Recommended action (Buy, Sell, Hold) aquired.
