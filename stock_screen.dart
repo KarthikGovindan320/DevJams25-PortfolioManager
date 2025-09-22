@@ -1,8 +1,7 @@
+// stock_screen.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'portfolio_screen.dart';
-import 'source_screen.dart';
 
 class Stock {
   final int id;
@@ -121,12 +120,12 @@ class StockService {
   }
 }
 
-class StockScreen extends StatefulWidget {
+class StockView extends StatefulWidget {
   @override
-  _StockScreenState createState() => _StockScreenState();
+  _StockViewState createState() => _StockViewState();
 }
 
-class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin {
+class _StockViewState extends State<StockView> with TickerProviderStateMixin {
   List<Stock> stocks = [];
   bool isLoading = true;
   String? error;
@@ -697,167 +696,106 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue[100]!,
-              Colors.blue[50]!,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            // Enhanced Header Section
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.blue[600]!,
-                    Colors.blue[700]!,
-                    Colors.blue[800]!,
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Stock Recommendations',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'AI-powered investment insights',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              Icons.trending_up,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Stock Table Section
-            Expanded(
-              child: buildStockTable(),
-            ),
-
-            Container(
-              color: Color(0xFF2563EB), // blue-600
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Bell/Notification Icon Button - Updated with proper navigation
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        // Current screen - highlight it
-                      },
-                      icon: Icon(
-                        Icons.notifications,
-                        color: Color(0xFF2563EB), // blue-600
-                        size: 24,
-                      ),
-                      padding: EdgeInsets.all(16),
-                    ),
-                  ),
-
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => PortfolioScreen()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.person_outlined,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    padding: EdgeInsets.all(12),
-                  ),
-
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => SourceScreen()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.volume_up_outlined,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    padding: EdgeInsets.all(12),
-                  ),
-                ],
-              ),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.blue[100]!,
+            Colors.blue[50]!,
+            Colors.white,
           ],
         ),
+      ),
+      child: Column(
+        children: [
+          // Enhanced Header Section
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.blue[600]!,
+                  Colors.blue[700]!,
+                  Colors.blue[800]!,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Recommendations',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'AI-powered investment insights',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            Icons.trending_up,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Stock Table Section
+          Expanded(
+            child: buildStockTable(),
+          ),
+        ],
       ),
     );
   }

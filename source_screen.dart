@@ -1,7 +1,6 @@
+// source_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'portfolio_screen.dart';
-import 'stock_screen.dart';
 
 class Source {
   final int id;
@@ -71,12 +70,12 @@ class SourceService {
   }
 }
 
-class SourceScreen extends StatefulWidget {
+class SourceView extends StatefulWidget {
   @override
-  _SourceScreenState createState() => _SourceScreenState();
+  _SourceViewState createState() => _SourceViewState();
 }
 
-class _SourceScreenState extends State<SourceScreen> with TickerProviderStateMixin {
+class _SourceViewState extends State<SourceView> with TickerProviderStateMixin {
   List<Source> sources = [];
   bool isLoading = true;
   String? error;
@@ -537,164 +536,106 @@ class _SourceScreenState extends State<SourceScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue[100]!,
-              Colors.blue[50]!,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            // Enhanced Header Section
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.blue[600]!,
-                    Colors.blue[700]!,
-                    Colors.blue[800]!,
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Source Analytics',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Performance insights',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              Icons.analytics_outlined,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Source Table Section
-            Expanded(
-              child: buildSourceTable(),
-            ),
-
-            // Bottom Navigation
-            Container(
-              color: Color(0xFF2563EB), // blue-600
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => StockScreen()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.notifications_outlined,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    padding: EdgeInsets.all(12),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => PortfolioScreen()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.person_outlined,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    padding: EdgeInsets.all(12),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        // Current screen
-                      },
-                      icon: Icon(
-                        Icons.volume_up,
-                        color: Color(0xFF2563EB),
-                        size: 24,
-                      ),
-                      padding: EdgeInsets.all(16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.blue[100]!,
+            Colors.blue[50]!,
+            Colors.white,
           ],
         ),
+      ),
+      child: Column(
+        children: [
+          // Enhanced Header Section
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.blue[600]!,
+                  Colors.blue[700]!,
+                  Colors.blue[800]!,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Source Analytics',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Performance insights',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            Icons.analytics_outlined,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Source Table Section
+          Expanded(
+            child: buildSourceTable(),
+          ),
+        ],
       ),
     );
   }
