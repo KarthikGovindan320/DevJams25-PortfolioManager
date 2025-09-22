@@ -1,133 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:math';
 import 'portfolio_screen.dart';
-import 'source_screen.dart';
+import 'stock_screen.dart';
 
-class Stock {
+class Source {
   final int id;
-  final String date;
-  final String stockName;
-  final String recommendedAction;
-  final double price;
-  final String source;
-  final double predictedTarget;
-  final double ltp;
-  final double upside;
+  final String name;
+  final double confidence;
+  final double profitLoss;
+  final List<List<double>> plotPoints;
 
-  Stock({
+  Source({
     required this.id,
-    required this.date,
-    required this.stockName,
-    required this.recommendedAction,
-    required this.price,
-    required this.source,
-    required this.predictedTarget,
-    required this.ltp,
-    required this.upside,
+    required this.name,
+    required this.confidence,
+    required this.profitLoss,
+    required this.plotPoints,
   });
+}
 
-  factory Stock.fromJson(Map<String, dynamic> json) {
-    return Stock(
-      id: json['id'],
-      date: json['date'],
-      stockName: json['stock_name'],
-      recommendedAction: json['recommended_action'],
-      price: double.parse(json['price'].toString()),
-      source: json['source'],
-      predictedTarget: double.parse(json['predicted_target'].toString()),
-      ltp: double.parse(json['ltp'].toString()),
-      upside: double.parse(json['upside'].toString()),
-    );
+class SourceService {
+  static Future<List<Source>> fetchSources() async {
+    // For demo purposes, return mock data
+    return [
+      Source(
+        id: 1,
+        name: 'Kushal Kumar',
+        confidence: 85.0,
+        profitLoss: 15.5,
+        plotPoints: [
+          [10, 15, 12, 18, 25, 22, 28, 32, 30, 35],
+          [5, 8, 7, 10, 15, 13, 18, 20, 19, 25],
+          [15, 20, 18, 22, 30, 28, 35, 40, 38, 45],
+        ],
+      ),
+      Source(
+        id: 2,
+        name: 'Ashok Abhimanue',
+        confidence: 72.0,
+        profitLoss: -5.2,
+        plotPoints: [
+          [40, 35, 38, 30, 25, 28, 20, 15, 18, 12],
+          [45, 40, 42, 35, 30, 32, 25, 20, 22, 18],
+          [35, 30, 32, 28, 22, 25, 18, 15, 20, 10],
+        ],
+      ),
+      Source(
+        id: 3,
+        name: 'Terrance Tailwood',
+        confidence: 90.0,
+        profitLoss: 20.0,
+        plotPoints: [
+          [25, 22, 28, 20, 18, 15, 12, 10, 8, 14],
+          [20, 18, 25, 15, 13, 10, 8, 5, 3, 9],
+          [30, 27, 33, 25, 23, 20, 17, 15, 13, 19],
+        ],
+      ),
+      Source(
+        id: 4,
+        name: 'Ester Evans',
+        confidence: 68.0,
+        profitLoss: -8.7,
+        plotPoints: [
+          [30, 28, 32, 25, 22, 20, 18, 15, 12, 10],
+          [25, 23, 27, 20, 18, 15, 13, 10, 8, 5],
+          [35, 33, 37, 30, 27, 25, 23, 20, 17, 15],
+        ],
+      ),
+    ];
   }
 }
 
-class StockService {
-  static const String baseUrl = 'http://iunderstandit.in/api';
-  
-  static Future<List<Stock>> fetchStocks() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/stocks.php'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        List<dynamic> jsonData = json.decode(response.body);
-        return jsonData.map((json) => Stock.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load stocks');
-      }
-    } catch (e) {
-      // For demo purposes, return mock data if API fails
-      return [
-        Stock(
-          id: 1,
-          date: '2024-09-17',
-          stockName: 'Apple Inc.',
-          recommendedAction: 'BUY',
-          price: 234.72,
-          source: 'Kushal Kumar',
-          predictedTarget: 250.00,
-          ltp: 234.72,
-          upside: 6.52,
-        ),
-        Stock(
-          id: 2,
-          date: '2024-09-17',
-          stockName: 'Google LLC',
-          recommendedAction: 'HOLD',
-          price: 165.45,
-          source: 'Ashok Abhimanue',
-          predictedTarget: 175.00,
-          ltp: 165.45,
-          upside: 5.77,
-        ),
-        Stock(
-          id: 3,
-          date: '2024-09-15',
-          stockName: 'Microsoft Corp',
-          recommendedAction: 'BUY',
-          price: 412.30,
-          source: 'Terrance Tailwood',
-          predictedTarget: 450.00,
-          ltp: 415.20,
-          upside: 9.14,
-        ),
-        Stock(
-          id: 4,
-          date: '2024-09-14',
-          stockName: 'Meta Platforms',
-          recommendedAction: 'SELL',
-          price: 298.50,
-          source: 'Ester Evans',
-          predictedTarget: 280.00,
-          ltp: 295.80,
-          upside: -6.22,
-        ),
-        Stock(
-          id: 5,
-          date: '2024-09-13',
-          stockName: 'Tesla Inc.',
-          recommendedAction: 'BUY',
-          price: 380.25,
-          source: 'Tommy Thompson',
-          predictedTarget: 420.00,
-          ltp: 385.50,
-          upside: 10.45,
-        ),
-      ];
-    }
-  }
-}
-
-class StockScreen extends StatefulWidget {
+class SourceScreen extends StatefulWidget {
   @override
-  _StockScreenState createState() => _StockScreenState();
+  _SourceScreenState createState() => _SourceScreenState();
 }
 
-class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin {
-  List<Stock> stocks = [];
+class _SourceScreenState extends State<SourceScreen> with TickerProviderStateMixin {
+  List<Source> sources = [];
   bool isLoading = true;
   String? error;
   Set<int> expandedRows = {};
@@ -149,7 +99,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
       curve: Curves.easeInOut,
     ));
     
-    fetchStocksData();
+    fetchSourcesData();
   }
 
   @override
@@ -158,17 +108,17 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
-  Future<void> fetchStocksData() async {
+  Future<void> fetchSourcesData() async {
     try {
       setState(() {
         isLoading = true;
         error = null;
       });
 
-      final fetchedStocks = await StockService.fetchStocks();
+      final fetchedSources = await SourceService.fetchSources();
       
       setState(() {
-        stocks = fetchedStocks;
+        sources = fetchedSources;
         isLoading = false;
       });
       
@@ -183,10 +133,10 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
 
   Future<void> _refresh() async {
     try {
-      final fetchedStocks = await StockService.fetchStocks();
+      final fetchedSources = await SourceService.fetchSources();
       
       setState(() {
-        stocks = fetchedStocks;
+        sources = fetchedSources;
         error = null;
       });
     } catch (e) {
@@ -196,33 +146,15 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
     }
   }
 
-  Color getActionColor(String action) {
-    switch (action.toUpperCase()) {
-      case 'BUY':
-        return Colors.green[600]!;
-      case 'SELL':
-        return Colors.red[600]!;
-      case 'HOLD':
-        return Colors.orange[600]!;
-      default:
-        return Colors.grey[600]!;
-    }
+  Color getProfitLossColor(double profitLoss) {
+    return profitLoss > 0 ? Colors.green[600]! : Colors.red[600]!;
   }
 
-  IconData getActionIcon(String action) {
-    switch (action.toUpperCase()) {
-      case 'BUY':
-        return Icons.trending_up;
-      case 'SELL':
-        return Icons.trending_down;
-      case 'HOLD':
-        return Icons.trending_flat;
-      default:
-        return Icons.help_outline;
-    }
+  IconData getProfitLossIcon(double profitLoss) {
+    return profitLoss > 0 ? Icons.trending_up : Icons.trending_down;
   }
 
-  Widget buildStockTable() {
+  Widget buildSourceTable() {
     if (isLoading) {
       return Center(
         child: Column(
@@ -234,7 +166,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
             ),
             SizedBox(height: 20),
             Text(
-              'Loading recommendations...',
+              'Loading sources...',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 16,
@@ -297,7 +229,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
               ),
               SizedBox(height: 20),
               ElevatedButton.icon(
-                onPressed: fetchStocksData,
+                onPressed: fetchSourcesData,
                 icon: Icon(Icons.refresh, size: 18),
                 label: Text('Retry'),
                 style: ElevatedButton.styleFrom(
@@ -315,7 +247,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
       );
     }
 
-    if (stocks.isEmpty) {
+    if (sources.isEmpty) {
       return Center(
         child: Container(
           padding: EdgeInsets.all(24),
@@ -329,7 +261,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
               ),
               SizedBox(height: 16),
               Text(
-                'No recommendations yet',
+                'No sources yet',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -338,7 +270,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
               ),
               SizedBox(height: 8),
               Text(
-                'Check back later for new stock recommendations',
+                'Check back later for new sources',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[500],
@@ -390,7 +322,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                 children: [
                   Expanded(
                     child: Text(
-                      'Latest Recommendations',
+                      'Source Performance',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -405,7 +337,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      '${stocks.length} stocks',
+                      '${sources.length} sources',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -417,14 +349,14 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
               ),
             ),
             
-            // Stock List
+            // Source List
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refresh,
                 color: Colors.blue[600],
                 child: ListView.separated(
                   physics: AlwaysScrollableScrollPhysics(),
-                  itemCount: stocks.length,
+                  itemCount: sources.length,
                   separatorBuilder: (context, index) => FractionallySizedBox(
                     widthFactor: 0.85,
                     alignment: Alignment.center,
@@ -434,8 +366,8 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                     ),
                   ),
                   itemBuilder: (context, index) {
-                    Stock stock = stocks[index];
-                    bool isExpanded = expandedRows.contains(stock.id);
+                    Source source = sources[index];
+                    bool isExpanded = expandedRows.contains(source.id);
                     
                     return AnimatedContainer(
                       duration: Duration(milliseconds: 300),
@@ -452,10 +384,10 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                           InkWell(
                             onTap: () {
                               setState(() {
-                                if (expandedRows.contains(stock.id)) {
-                                  expandedRows.remove(stock.id);
+                                if (expandedRows.contains(source.id)) {
+                                  expandedRows.remove(source.id);
                                 } else {
-                                  expandedRows.add(stock.id);
+                                  expandedRows.add(source.id);
                                 }
                               });
                             },
@@ -464,17 +396,17 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                               padding: EdgeInsets.all(16),
                               child: Column(
                                 children: [
-                                  // Top Row - Stock Info and Action
+                                  // Top Row - Source Info and Confidence
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Stock Info
+                                      // Source Info
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              stock.stockName,
+                                              source.name,
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -482,26 +414,18 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                                               ),
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              stock.date,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[500],
-                                              ),
-                                            ),
                                           ],
                                         ),
                                       ),
                                       
-                                      // Action Badge
+                                      // Confidence Badge
                                       Container(
                                         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: getActionColor(stock.recommendedAction).withOpacity(0.1),
+                                          color: Colors.blue[600]!.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(16),
                                           border: Border.all(
-                                            color: getActionColor(stock.recommendedAction),
+                                            color: Colors.blue[600]!,
                                             width: 1,
                                           ),
                                         ),
@@ -509,17 +433,17 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Icon(
-                                              getActionIcon(stock.recommendedAction),
+                                              Icons.security,
                                               size: 14,
-                                              color: getActionColor(stock.recommendedAction),
+                                              color: Colors.blue[600],
                                             ),
                                             SizedBox(width: 4),
                                             Text(
-                                              stock.recommendedAction,
+                                              '${source.confidence.toStringAsFixed(0)}%',
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
-                                                color: getActionColor(stock.recommendedAction),
+                                                color: Colors.blue[600],
                                               ),
                                             ),
                                           ],
@@ -530,25 +454,25 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                                   
                                   SizedBox(height: 12),
                                   
-                                  // Bottom Row - Price Info and Expand
+                                  // Bottom Row - Profit/Loss and Expand
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      // Price Info
+                                      // Profit/Loss Info
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              '₹${stock.price.toStringAsFixed(2)}',
+                                              '${source.profitLoss > 0 ? '+' : ''}${source.profitLoss.toStringAsFixed(2)}%',
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.grey[800],
+                                                color: getProfitLossColor(source.profitLoss),
                                               ),
                                             ),
                                             Text(
-                                              'Target: ₹${stock.predictedTarget.toStringAsFixed(2)}',
+                                              source.profitLoss > 0 ? 'Profit' : 'Loss',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.grey[600],
@@ -585,57 +509,13 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                                       children: [
                                         Divider(color: Colors.grey[300]),
                                         SizedBox(height: 12),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: _buildDetailCard(
-                                                'LTP',
-                                                '₹${stock.ltp.toStringAsFixed(2)}',
-                                                Icons.monetization_on_outlined,
-                                                Colors.blue,
-                                              ),
-                                            ),
-                                            SizedBox(width: 8),
-                                            Expanded(
-                                              child: _buildDetailCard(
-                                                'Upside',
-                                                '${stock.upside > 0 ? '+' : ''}${stock.upside.toStringAsFixed(2)}%',
-                                                stock.upside > 0 ? Icons.trending_up : Icons.trending_down,
-                                                stock.upside > 0 ? Colors.green : Colors.red,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 8),
                                         Container(
-                                          width: double.infinity,
-                                          padding: EdgeInsets.all(10),
+                                          height: 200,  // Increased height for better visibility
                                           decoration: BoxDecoration(
                                             color: Colors.grey[100],
                                             borderRadius: BorderRadius.circular(8),
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Source',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Colors.grey[600],
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                stock.source,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey[800],
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          child: SourceGraph(source: source),
                                         ),
                                       ],
                                     ),
@@ -651,46 +531,6 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailCard(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 16),
-          SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
@@ -750,7 +590,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Stock Recommendations',
+                                  'Source Analytics',
                                   style: TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
@@ -761,7 +601,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                                 ),
                                 SizedBox(height: 8),
                                 Text(
-                                  'AI-powered investment insights',
+                                  'Performance insights',
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.white.withOpacity(0.9),
@@ -780,7 +620,7 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
-                              Icons.trending_up,
+                              Icons.analytics_outlined,
                               color: Colors.white,
                               size: 28,
                             ),
@@ -793,37 +633,32 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
               ),
             ),
 
-            // Stock Table Section
+            // Source Table Section
             Expanded(
-              child: buildStockTable(),
+              child: buildSourceTable(),
             ),
 
+            // Bottom Navigation
             Container(
               color: Color(0xFF2563EB), // blue-600
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Bell/Notification Icon Button - Updated with proper navigation
-
-                  Container(
-                    decoration: BoxDecoration(
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => StockScreen()),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.notifications_outlined,
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+                      size: 24,
                     ),
-                    child: IconButton(
-                      onPressed: () {
-                        // Current screen - highlight it
-                      },
-                      icon: Icon(
-                        Icons.notifications,
-                        color: Color(0xFF2563EB), // blue-600
-                        size: 24,
-                      ),
-                      padding: EdgeInsets.all(16),
-                    ),
+                    padding: EdgeInsets.all(12),
                   ),
-
                   IconButton(
                     onPressed: () {
                       Navigator.pushReplacement(
@@ -838,20 +673,22 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
                     ),
                     padding: EdgeInsets.all(12),
                   ),
-
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => SourceScreen()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.volume_up_outlined,
+                  Container(
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      size: 24,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: EdgeInsets.all(12),
+                    child: IconButton(
+                      onPressed: () {
+                        // Current screen
+                      },
+                      icon: Icon(
+                        Icons.volume_up,
+                        color: Color(0xFF2563EB),
+                        size: 24,
+                      ),
+                      padding: EdgeInsets.all(16),
+                    ),
                   ),
                 ],
               ),
@@ -861,4 +698,97 @@ class _StockScreenState extends State<StockScreen> with TickerProviderStateMixin
       ),
     );
   }
+}
+
+class SourceGraph extends StatelessWidget {
+  final Source source;
+
+  const SourceGraph({Key? key, required this.source}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size.infinite,
+      painter: SourceGraphPainter(source),
+    );
+  }
+}
+
+class SourceGraphPainter extends CustomPainter {
+  final Source source;
+
+  SourceGraphPainter(this.source);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final lines = source.plotPoints;
+    if (lines.isEmpty || lines.every((line) => line.isEmpty)) return;
+
+    // Find global min and max across all lines
+    double globalMax = lines.fold<double>(double.negativeInfinity, (max, line) => line.fold(max, (m, v) => v > m ? v : m));
+    double globalMin = lines.fold<double>(double.infinity, (min, line) => line.fold(min, (m, v) => v < m ? v : m));
+    final range = globalMax - globalMin == 0 ? 1 : globalMax - globalMin;
+
+    final width = size.width;
+    final height = size.height;
+    final padding = 16.0;
+
+    // Draw grid
+    final gridPaint = Paint()
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 1;
+
+    // Horizontal grid lines
+    for (int i = 1; i < 4; i++) {
+      final y = padding + i * (height - 2 * padding) / 4;
+      canvas.drawLine(
+        Offset(padding, y),
+        Offset(width - padding, y),
+        gridPaint,
+      );
+    }
+
+    // Define colors for different lines
+    final List<Color> lineColors = [
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.green,
+      Colors.red,
+      Colors.cyan,
+    ];
+
+    // Draw each line
+    for (int lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      final points = lines[lineIndex];
+      if (points.isEmpty) continue;
+
+      final linePaint = Paint()
+        ..color = lineColors[lineIndex % lineColors.length]
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+
+      final path = Path();
+      for (int i = 0; i < points.length; i++) {
+        final x = padding + i * (width - 2 * padding) / (points.length - 1);
+        final y = height - padding - (points[i] - globalMin) / range * (height - 2 * padding);
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      canvas.drawPath(path, linePaint);
+
+      // Draw points
+      for (int i = 0; i < points.length; i++) {
+        final x = padding + i * (width - 2 * padding) / (points.length - 1);
+        final y = height - padding - (points[i] - globalMin) / range * (height - 2 * padding);
+        canvas.drawCircle(Offset(x, y), 4, Paint()..color = lineColors[lineIndex % lineColors.length]);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

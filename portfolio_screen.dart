@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'stock_screen.dart';
+import 'source_screen.dart';
 
 class Investment {
   final String name;
@@ -21,10 +22,16 @@ class PortfolioScreen extends StatefulWidget {
   _PortfolioScreenState createState() => _PortfolioScreenState();
 }
 
-class _PortfolioScreenState extends State<PortfolioScreen> {
+class _PortfolioScreenState extends State<PortfolioScreen> with TickerProviderStateMixin {
   int? expandedIndex;
+  List<Investment> investments = [];
+  bool isLoading = true;
+  String? error;
+  Set<int> expandedRows = {};
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
-  final List<Investment> investments = [
+  final List<Investment> mockInvestments = [
     Investment(
       name: 'Chalet Hotels',
       percentage: 20,
@@ -45,16 +52,421 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     ),
   ];
 
-  void toggleExpansion(int index) {
-    setState(() {
-      expandedIndex = expandedIndex == index ? null : index;
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    fetchInvestments();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void fetchInvestments() {
+    // Simulate fetch
+    Future.delayed(Duration(seconds: 1), () {
+      setState(() {
+        investments = mockInvestments;
+        isLoading = false;
+      });
+      _animationController.forward();
     });
   }
 
-  void navigateToStockScreen() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => StockScreen()),
+  Future<void> _refresh() async {
+    setState(() {
+      investments = mockInvestments;
+      error = null;
+    });
+  }
+
+  Color getProfitLossColor(bool isPositive) {
+    return isPositive ? Colors.green[600]! : Colors.red[600]!;
+  }
+
+  IconData getProfitLossIcon(bool isPositive) {
+    return isPositive ? Icons.trending_up : Icons.trending_down;
+  }
+
+  Widget buildPortfolio() {
+    if (isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+              strokeWidth: 3,
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Loading portfolio...',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (error != null) {
+      return Center(
+        child: Container(
+          padding: EdgeInsets.all(24),
+          margin: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.1),
+                blurRadius: 20,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline,
+                  color: Colors.red[600],
+                  size: 32,
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Unable to load data',
+                style: TextStyle(
+                  color: Colors.red[700],
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Please check your connection and try again',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: fetchInvestments,
+                icon: Icon(Icons.refresh, size: 18),
+                label: Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[600],
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (investments.isEmpty) {
+      return Center(
+        child: Container(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              SizedBox(height: 16),
+              Text(
+                'No investments yet',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Check back later for new investments',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        margin: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Enhanced Header
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue[700]!,
+                    Colors.blue[800]!,
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Recent Investments',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '${investments.length} investments',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Investment List
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                color: Colors.blue[600],
+                child: ListView.separated(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  itemCount: investments.length,
+                  separatorBuilder: (context, index) => FractionallySizedBox(
+                    widthFactor: 0.85,
+                    alignment: Alignment.center,
+                    child: Container(
+                      height: 1,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                  itemBuilder: (context, index) {
+                    Investment investment = investments[index];
+                    bool isExpanded = expandedRows.contains(index);
+                    
+                    return AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isExpanded ? Colors.blue[50] : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: isExpanded 
+                            ? Border.all(color: Colors.blue[200]!, width: 1)
+                            : null,
+                      ),
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (expandedRows.contains(index)) {
+                                  expandedRows.remove(index);
+                                } else {
+                                  expandedRows.add(index);
+                                }
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  // Top Row - Investment Name
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Investment Info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              investment.name,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey[800],
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      // Percentage Badge
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: getProfitLossColor(investment.isPositive).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: getProfitLossColor(investment.isPositive),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              getProfitLossIcon(investment.isPositive),
+                                              size: 14,
+                                              color: getProfitLossColor(investment.isPositive),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              '${investment.isPositive ? '+' : '-'}${investment.percentage}%',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: getProfitLossColor(investment.isPositive),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  SizedBox(height: 12),
+                                  
+                                  // Bottom Row - Expand
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Placeholder for more info if needed
+                                      Expanded(
+                                        child: Text(
+                                          'Performance',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // Expand Icon
+                                      AnimatedRotation(
+                                        turns: isExpanded ? 0.5 : 0,
+                                        duration: Duration(milliseconds: 300),
+                                        child: Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          
+                          // Expanded Details
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            height: isExpanded ? null : 0,
+                            child: isExpanded 
+                                ? Container(
+                                    padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                    child: Column(
+                                      children: [
+                                        Divider(color: Colors.grey[300]),
+                                        SizedBox(height: 12),
+                                        Container(
+                                          height: 200,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: InvestmentGraph(investment: investment),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -67,51 +479,92 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF93C5FD), // blue-300
-              Color(0xFFDBEAFE), // blue-100
+              Colors.blue[100]!,
+              Colors.blue[50]!,
+              Colors.white,
             ],
           ),
         ),
         child: Column(
           children: [
-            // Header Section
+            // Enhanced Header Section
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF60A5FA), // blue-400
-                    Color(0xFF3B82F6), // blue-500
-                    Color(0xFF2563EB), // blue-600
+                    Colors.blue[600]!,
+                    Colors.blue[700]!,
+                    Colors.blue[800]!,
                   ],
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
-              ),
-              padding: EdgeInsets.fromLTRB(24, 48, 24, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, TOM',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '+91 9846143302',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFFDFE7FF), // blue-100
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
                   ),
                 ],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'My Portfolio',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Investment overview',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              Icons.pie_chart_outline,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 
@@ -137,7 +590,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     'Balance Amount:',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Color(0xFF6B7280), // gray-600
+                      color: Colors.grey[600],
                     ),
                   ),
                   SizedBox(height: 8),
@@ -149,7 +602,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937), // gray-800
+                            color: Colors.grey[800],
                           ),
                         ),
                       ),
@@ -158,7 +611,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF10B981), // green-500
+                          color: Colors.green[500],
                         ),
                       ),
                     ],
@@ -167,182 +620,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
             ),
 
-            // Recent Investments Section
+            // Portfolio Table Section
             Expanded(
-              child: Container(
-                margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFEFF6FF), // blue-50
-                      Colors.white,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Color(0xFFC7D2FE), // blue-200
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Header
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFFDBEAFE), // blue-100
-                            Color(0xFFEFF6FF), // blue-50
-                          ],
-                        ),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                        ),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFFC7D2FE), // blue-200
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Recent Investments',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1F2937), // gray-800
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Investments List
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: investments.length,
-                        itemBuilder: (context, index) {
-                          final investment = investments[index];
-                          return Column(
-                            children: [
-                              // Investment Row
-                              InkWell(
-                                onTap: () => toggleExpansion(index),
-                                child: Container(
-                                  padding: EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Color(0xFFEFF6FF), // blue-50
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          investment.name,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF1F2937), // gray-800
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        '${investment.isPositive ? '+' : '-'}${investment.percentage}%',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: investment.isPositive
-                                              ? Color(0xFF10B981) // green-500
-                                              : Color(0xFFEF4444), // red-500
-                                        ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Container(
-                                        padding: EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFDBEAFE).withOpacity(0.5), // blue-100
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Icon(
-                                          expandedIndex == index
-                                              ? Icons.keyboard_arrow_up
-                                              : Icons.keyboard_arrow_down,
-                                          color: Color(0xFF2563EB), // blue-600
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              // Expandable Graph Section
-                              if (expandedIndex == index)
-                                Container(
-                                  padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Color(0xFFEFF6FF), // blue-50
-                                        Colors.white,
-                                      ],
-                                    ),
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Color(0xFFDBEAFE), // blue-100
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Container(
-                                    height: 96,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Color(0xFFDBEAFE), // blue-100
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
-                                          blurRadius: 5,
-                                          offset: Offset(0, 1),
-                                        ),
-                                      ],
-                                    ),
-                                    padding: EdgeInsets.all(8),
-                                    child: InvestmentGraph(investment: investment),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: buildPortfolio(),
             ),
 
             // Bottom Navigation
@@ -352,9 +632,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Bell/Notification Icon Button - Updated with proper navigation
                   IconButton(
-                    onPressed: navigateToStockScreen,
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => StockScreen()),
+                      );
+                    },
                     icon: Icon(
                       Icons.notifications_outlined,
                       color: Colors.white,
@@ -369,18 +653,23 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     ),
                     child: IconButton(
                       onPressed: () {
-                        // Current screen - highlight it
+                        // Current screen
                       },
                       icon: Icon(
                         Icons.person,
-                        color: Color(0xFF2563EB), // blue-600
-                        size: 28,
+                        color: Color(0xFF2563EB),
+                        size: 24,
                       ),
                       padding: EdgeInsets.all(16),
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => SourceScreen()),
+                      );
+                    },
                     icon: Icon(
                       Icons.volume_up_outlined,
                       color: Colors.white,
@@ -420,32 +709,24 @@ class GraphPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final points = investment.plotPoints;
-    final maxValue = points.reduce(max);
-    final minValue = points.reduce(min);
-    final range = maxValue - minValue == 0 ? 1 : maxValue - minValue;
+    if (points.isEmpty) return;
+
+    double globalMax = points.fold<double>(double.negativeInfinity, (max, v) => v > max ? v : max);
+    double globalMin = points.fold<double>(double.infinity, (min, v) => v < min ? v : min);
+    final range = globalMax - globalMin == 0 ? 1 : globalMax - globalMin;
 
     final width = size.width;
     final height = size.height;
-    final padding = 20.0;
+    final padding = 16.0;
 
     // Draw grid
     final gridPaint = Paint()
-      ..color = Color(0xFF94A3B8).withOpacity(0.2) // slate-400
-      ..strokeWidth = 0.5;
-
-    // Vertical grid lines
-    for (int i = 0; i < 8; i++) {
-      final x = padding + (i * (width - 2 * padding)) / 7;
-      canvas.drawLine(
-        Offset(x, padding),
-        Offset(x, height - padding),
-        gridPaint,
-      );
-    }
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 1;
 
     // Horizontal grid lines
-    for (int i = 0; i < 5; i++) {
-      final y = padding + (i * (height - 2 * padding)) / 4;
+    for (int i = 1; i < 4; i++) {
+      final y = padding + i * (height - 2 * padding) / 4;
       canvas.drawLine(
         Offset(padding, y),
         Offset(width - padding, y),
@@ -453,86 +734,34 @@ class GraphPainter extends CustomPainter {
       );
     }
 
-    // Draw main line
-    final lineColor = investment.isPositive 
-        ? Color(0xFF10B981) // green-500
-        : Color(0xFFEF4444); // red-500
+    // Draw line
+    final lineColor = investment.isPositive ? Colors.green : Colors.red;
 
     final linePaint = Paint()
       ..color = lineColor
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
     final path = Path();
     for (int i = 0; i < points.length; i++) {
-      final x = padding + (i * (width - 2 * padding)) / (points.length - 1);
-      final y = height - padding - ((points[i] - minValue) / range) * (height - 2 * padding);
-      
+      final x = padding + i * (width - 2 * padding) / (points.length - 1);
+      final y = height - padding - (points[i] - globalMin) / range * (height - 2 * padding);
       if (i == 0) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
     }
-
     canvas.drawPath(path, linePaint);
 
-    // Draw data points
-    final pointPaint = Paint()
-      ..color = lineColor
-      ..style = PaintingStyle.fill;
-
-    final pointBorderPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
+    // Draw points
     for (int i = 0; i < points.length; i++) {
-      final x = padding + (i * (width - 2 * padding)) / (points.length - 1);
-      final y = height - padding - ((points[i] - minValue) / range) * (height - 2 * padding);
-      
-      canvas.drawCircle(Offset(x, y), 3, pointPaint);
-      canvas.drawCircle(Offset(x, y), 3, pointBorderPaint);
+      final x = padding + i * (width - 2 * padding) / (points.length - 1);
+      final y = height - padding - (points[i] - globalMin) / range * (height - 2 * padding);
+      canvas.drawCircle(Offset(x, y), 4, Paint()..color = lineColor);
     }
-
-    // Draw arrow at the end
-    final lastIndex = points.length - 1;
-    final lastX = padding + (lastIndex * (width - 2 * padding)) / (points.length - 1);
-    final lastY = height - padding - ((points[lastIndex] - minValue) / range) * (height - 2 * padding);
-
-    final arrowPaint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke;
-
-    final arrowPath = Path();
-    arrowPath.moveTo(lastX + 8, lastY - 4);
-    arrowPath.lineTo(lastX + 15, lastY);
-    arrowPath.lineTo(lastX + 8, lastY + 4);
-
-    canvas.drawPath(arrowPath, arrowPaint);
-
-    // Draw percentage label
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '${investment.isPositive ? '+' : '-'}${investment.percentage}%',
-        style: TextStyle(
-          color: lineColor,
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    
-    textPainter.layout();
-    textPainter.paint(canvas, Offset(16, height - 24));
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
